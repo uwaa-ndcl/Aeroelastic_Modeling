@@ -1,0 +1,37 @@
+function [I1,I2] = Desmarais(U1,K1)
+    %
+    % Desmarais coefficients 
+    ANdata=[.000319759140 -.000055461471 .002726074362 ...
+        .005749551566 .031455895072  .106031126212 ...
+        .406838011567 .798112357155  -.417749229098 ...
+        .077480713894 -.012677284771 .001787032960 ];
+    
+    b= .009054814793 ;
+    m= 1;
+    %                                                                      
+    %  COMPUTE A THREE DIMENSIONAL MODIFIED KERNEL FUNCTION (SUBSONIC) 
+    %  A NON-PLANAR VERSION. ADOPTS LANDAHL'S METHOD (AIAA J. MAY 1967)
+    %  COMPUTE THE INTEGRALS I1(U1,K1) AND 3*I2(U1,K1) FOR U1>0.         
+    %  BY THE COEFFICIENTS OF DESMARAIS'S APPROXIMATION TO U/DSQRT(1+U**2)
+    
+    %Best reference in terms of clarity is DLR-IB-AE-GO-2020-137
+    %An Implementation of the Vortex Lattice and the Doublet Lattice Method Version 1.05
+    %Equations referenced are from this paper.
+
+    Desmarais_approx=0;
+    I0=0;
+    J0=0;
+
+    for n=1:12
+        Desmarais_approx=Desmarais_approx+ANdata(n)*exp(-2^(n/m)*b*U1);              % equation 2.76
+        I0=I0+ANdata(n)*exp(-2^(n/m)*b*U1)/((2^(n/m))^2*b^2+K1^2)*(2^(n/m)*b-1i*K1); % equation 2.77
+        J0=J0+ANdata(n)*exp(-2^(n/m)*b*U1)/((2^(n/m))^2*b^2+K1^2)^2*( ...            % equation 2.78
+            (2^(n/m))^2*b^2-K1^2 + 2^(n/m)*b*U1*((2^(n/m))^2*b^2+K1^2)  ...
+            -1i*K1*(2*2^(n/m)*b+U1*((2^(n/m))^2*b^2+K1^2)));
+    end
+                                                                                                                
+    I1=(1-U1/(1+U1^2)^0.5-1i*K1*I0)*exp(-1i*K1*U1);                                      % equation 2.72
+    I2=1/3*((2+1i*K1*U1)*(1-U1/(1+U1^2)^0.5) ...                                        % equation 2.73
+        - U1/(1+U1^2)^1.5 - 1i*K1*I0 + K1^2*J0)*exp(-1i*K1*U1);                          
+
+end
